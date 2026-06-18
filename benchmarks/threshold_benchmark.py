@@ -1,6 +1,13 @@
 import time
 import os
-import numpy as np
+import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+SRC_DIR = ROOT_DIR / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
 from gbm_simulation import (
     price_european_call,
     price_european_call_parallel,
@@ -78,11 +85,11 @@ def run_threshold_analysis():
 
         summary_n0[name] = n0_val
         print(f"{'-'*75}")
-        print(f"Conclusion for {name}: Crossover Threshold (n₀) ≈ {n0_val}\n\n")
+        print(f"Conclusion for {name}: Crossover Threshold (n0) = {n0_val}\n\n")
 
     # Final Summary Table
     print("=" * 50)
-    print("FINAL SUMMARY: CROSSOVER THRESHOLDS (n₀)")
+    print("FINAL SUMMARY: CROSSOVER THRESHOLDS (n0)")
     print("=" * 50)
     for option_type, threshold in summary_n0.items():
         print(f" {option_type:<20} : Parallel is better when n_sims >= {threshold}")
