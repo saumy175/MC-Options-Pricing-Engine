@@ -92,8 +92,8 @@ def price_european_call_parallel(S0, r, sigma, T, K, n_sims, n_workers=4, chunk_
         for i in range(len(chunks))
     ]
 
-    # Use the existing pool instead of a 'with Pool(...) as pool' block
-    results = pool.map(worker_european_call, args_list)
+    with Pool(processes=n_workers) as pool:
+        results = pool.map(worker_european_call, args_list)
 
     total_payoff = sum(s for s, _ in results)
     total_count = sum(c for _, c in results)
