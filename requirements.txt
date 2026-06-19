@@ -1,5 +1,2 @@
 numpy
 scipy
-multiprocessing
-time
-os
