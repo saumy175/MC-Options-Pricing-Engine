@@ -31,5 +31,3 @@ results/
 config/local.yaml
 config/local.json
 .env
-
-.gitignore
