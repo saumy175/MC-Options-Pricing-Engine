@@ -27,7 +27,7 @@ standard deviation of the payoffs.
 | Option | Payoff $\phi(S)$ |
 |---|---|
 | European call | $\max(S_T - K,\ 0)$ |
-| Asian call | $\max\!\left(\bar{S} - K,\ 0\right)$, $\bar{S} = \frac{1}{n}\sum_{t} S_t$ |
+| Asian call | $\max\left(\bar{S} - K,\ 0\right)$, $\bar{S} = \frac{1}{n}\sum_{t} S_t$ |
 | Barrier call (knock-out) | $\max(S_T - K,\ 0) \cdot \mathbf{1}[\max_t S_t \leq B]$ |
 
 ### Variance reduction — antithetic variates
