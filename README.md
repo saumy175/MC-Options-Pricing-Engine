@@ -83,7 +83,7 @@ No external libraries. The implementation depends only on `<random>`, `<future>`
 ## Build
 
 ```bash
-git clone https://github.com/<saumy175>/MC-Options-Pricing-Engine
+git clone https://github.com/saumy175/MC-Options-Pricing-Engine
 cd MC-Options-Pricing-Engine/cpp
 
 mkdir build && cd build
