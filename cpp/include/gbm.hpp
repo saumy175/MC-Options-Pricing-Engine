@@ -11,7 +11,7 @@ struct MarketParams {
     double sigma;
 };
 
-struct EuropeanOptionsParams {
+struct EuropeanOptionParams {
     double K;
     double T;
 };
@@ -30,8 +30,8 @@ struct BarrierOptionParams {
 struct SimulationConfig {
     int n_sims;
     int n_steps = 252;
-    int seed;
     int n_workers = 4;
+    int seed;
     bool antithetic = true;
 };
 

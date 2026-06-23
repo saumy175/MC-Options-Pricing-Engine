@@ -48,7 +48,7 @@ refer: https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model
 */
 inline double black_scholes_call(
     const MarketParams &market,
-    const EuropeanOptionsParams &option
+    const EuropeanOptionParams &option
 ) {
     auto phi = [](double x){
         return 0.5*std::erfc(-x/std::sqrt(2));
@@ -73,7 +73,7 @@ Antithetic: simulate Z and -Z and then average their payoffs
 */
 inline PricingResult price_european_call(
     const MarketParams &market,
-    const EuropeanOptionsParams &option,
+    const EuropeanOptionParams &option,
     const SimulationConfig &config
 ) {
     std::mt19937_64 rng(config.seed);
