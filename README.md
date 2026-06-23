@@ -11,13 +11,13 @@ call options with antithetic variance reduction and `std::async`-based paralleli
 Asset price paths are simulated under the risk-neutral measure using the discrete
 GBM scheme derived from the Black-Scholes SDE:
 
-$$S_{t + \Delta t} = S_t \cdot \exp\!\left[\left(r - \tfrac{1}{2}\sigma^2\right)\Delta t + \sigma\sqrt{\Delta t}\, Z\right], \quad Z \sim \mathcal{N}(0,1)$$
+$$S_{t + \Delta t} = S_t \cdot \exp\left[\left(r - \tfrac{1}{2}\sigma^2\right)\Delta t + \sigma\sqrt{\Delta t}\, Z\right], \quad Z \sim \mathcal{N}(0,1)$$
 
 where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n\_\text{steps}$.
 
 The option price is estimated as the discounted expected payoff:
 
-$$\hat{V} = e^{-rT} \cdot \frac{1}{N} \sum_{i=1}^{N} \phi\!\left(S^{(i)}\right)$$
+$$\hat{V} = e^{-rT} \cdot \frac{1}{N} \sum_{i=1}^{N} \phi\left(S^{(i)}\right)$$
 
 with standard error $\hat{\sigma} / \sqrt{N}$ where $\hat{\sigma}$ is the sample
 standard deviation of the payoffs.
