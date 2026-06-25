@@ -25,17 +25,15 @@ class BarrierOptionParams:
 @dataclass(frozen=True)
 class SimulationConfig:
     n_sims: int
-    n_steps: int | None=None
-    seed: int | None=None
-    chunk_size: int = 50_000
+    n_steps: int = 252
     n_workers: int = 4
+    seed: int
     antithetic: bool = True
 
 @dataclass(frozen=True)
 class PricingResult:
     price: float
     standard_error: float | None
-    confidence_interval: tuple[float, float] | None
+    ci: tuple[float, float] | None
     n_sims: int 
     method: str
-    seed: int | None
