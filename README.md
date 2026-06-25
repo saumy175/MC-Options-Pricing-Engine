@@ -193,7 +193,7 @@ Asian and Barrier options scale much better than a tiny closed-form calculation 
 
 ### 3) Convergence benchmark
 
-| N | Price | SE | \(|MC - BS|\) | SE ratio |
+| N | Price | SE | abs(MC - BS) | SE ratio |
 |---|---|---|---|---|
 | 1,000 | 10.6350 | 0.3405 | 0.3381 | — |
 | 5,000 | 10.6020 | 0.1498 | 0.3051 | 2.27× |
