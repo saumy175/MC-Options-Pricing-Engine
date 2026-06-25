@@ -45,131 +45,178 @@ achieves a 3–5× reduction in variance for at-the-money calls.
 
 ## Architecture
 
-```
+```text
+benchmarks/
+  pricing.hpp       — pricing benchmark: sequential vs parallel prices, CI, timing
+  scalability.hpp   — worker-scaling benchmark: speedup vs number of workers
+  convergence.hpp   — Monte Carlo convergence benchmark: error vs number of paths
+
 include/
-  gbm.hpp                — MarketParams, SimulationConfig, generate_path()
-  pricers.hpp            — Sequential pricers, Black-Scholes reference
-  parallel_pricers.hpp   — std::async worker pool, pooled variance SE
-src/
-  main.cpp               — Validation, timing, speedup table
-CMakeLists.txt
+  cli.hpp           — command-line parsing and default parameter block
+  greeks.hpp        — finite-difference Greeks
+  gbm.hpp           — GBM path generation under the risk-neutral measure
+  parallel_pricers.hpp
+                    — parallel Monte Carlo pricers and worker aggregation
+  pricers.hpp       — sequential pricers and analytical Black-Scholes reference
 ```
 
-**Key design decisions:**
-
-- Each `std::async` worker owns its own `std::mt19937_64` instance seeded with
-  `config.seed + worker_id`. No shared RNG state, no mutexes, lock-free by design.
-- Workers return `(sum, sum_of_squares, count)` rather than a price. The main thread
-  pools these to compute a statistically exact SE via the identity
-  $\text{Var} = (\sum x_i^2 - N\bar{x}^2)/(N-1)$, avoiding the need to store or
-  transmit full payoff vectors across threads.
-- European calls use the closed-form single-step terminal price $S_T = S_0 \exp(\cdot)$,
-  bypassing path simulation entirely. Asian and Barrier options require full paths.
-
----
-
-## Requirements
-
-- C++20 or later
-- CMake ≥ 3.16
-- POSIX threads (standard on Linux and macOS; on Windows, use WSL2 or MinGW)
-
-No external libraries. The implementation depends only on `<random>`, `<future>`,
-`<numeric>`, and `<cmath>` from the standard library.
-
----
-
-## Build
-
-```bash
-git clone https://github.com/saumy175/MC-Options-Pricing-Engine
-cd MC-Options-Pricing-Engine/cpp
-
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
-```
-
-The `Release` build compiles with `-O3 -march=native`. For debugging, substitute
-`-DCMAKE_BUILD_TYPE=Debug`.
-
----
 
 ## Run
 
+This is a CLI-based program.
+
 ```bash
-./mc_engine
+Usage: ./mc_engine [options]
+
+Market parameters:
+  --S0      <float>   Starting price         (default: 100.0)
+  --r       <float>   Risk-free rate         (default: 0.05)
+  --sigma   <float>   Volatility             (default: 0.20)
+
+Option parameters:
+  --K       <float>   Strike price           (default: 100.0)
+  --T       <float>   Time to expiry (years) (default: 1.0)
+  --B       <float>   Barrier level          (default: 120.0)
+
+Simulation parameters:
+  --sims    <int>     Number of simulations  (default: 1000000)
+  --steps   <int>     Path steps per sim     (default: 252)
+  --workers <int>     Parallel workers       (default: 4)
+  --seed    <int>     RNG seed               (default: 42)
+  --no-antithetic     Disable antithetic variates
+
+Mode:
+  --mode    <string>  pricing | scalability | convergence | greeks | all
+                      (default: all)
+
+Examples:
+  ./mc_engine
+  ./mc_engine --mode pricing --S0 110 --K 105 --sims 500000
+  ./mc_engine --mode greeks
+  ./mc_engine --mode scalability --sims 2000000
 ```
 
-Parameters are set in `src/main.cpp` under the clearly labelled parameter block:
-
-```cpp
-MarketParams market { .S0 = 100.0, .r = 0.05, .sigma = 0.20 };
-
-SimulationConfig config {
-    .n_sims     = 1'000'000,
-    .n_steps    = 252,        // trading days per year
-    .n_workers  = 4,
-    .seed       = 42,
-    .antithetic = true
-};
-```
-
-Rebuild after any parameter change.
-
----
+To change the default values, edit `include/cli.hpp` and change them at 'src/main.cpp' as well.
 
 ## Benchmark results
 
-**Hardware:** [Intel(R) Core(TM) Ultra 5 225H], [14]-core, [16] GB RAM, [Arch Linux, Linux 7.0.5-arch1-1]
+**Hardware:** Intel(R) Core(TM) Ultra 5 225H, 14-core CPU, 16 GB RAM, Arch Linux
 
-**Parameters:** $S_0 = 100$, $K = 100$, $r = 0.05$, $\sigma = 0.20$, $T = 1.0$,
-$n\_\text{sims} = 10^6$, $n\_\text{steps} = 252$, 4 workers, antithetic variates enabled.
+**Benchmark parameters used in the output below:**  
+\(S_0 = 100\), \(K = 100\), \(r = 0.05\), \(\sigma = 0.20\), \(T = 1.0\),  
+\(B = 120\), \(N = 10^6\), \(n_{steps} = 252\), 4 workers, antithetic variates enabled.
 
-### Prices
+### What the benchmarks measure
 
-| Option | Sequential | Parallel | Black-Scholes |
+| Benchmark | What it measures | Main quantity of interest |
+|---|---|---|
+| Pricing | Final option value, confidence interval, and runtime | Accuracy of the Monte Carlo estimator and end-to-end performance |
+| Scalability (for Asian and Barrier Calls) | Runtime as workers increase | Parallel speedup and overhead amortization |
+| Convergence | Error decay as sample size grows | \(N^{-1/2}\) convergence law |
+
+### 1) Pricing benchmark
+
+| Contract | Sequential price | Parallel price | Black-Scholes |
 |---|---|---|---|
-| European | 10.4499 | 10.4578 | 10.2969 |
-| Asian | 5.7539 | 5.7641 | — |
-| Barrier ($B = 120$) | 1.3288 | 1.3270 | — |
+| European call | 10.4499 | 10.4578 | 10.2969 |
+| Asian call | 5.7539 | 5.7641 | — |
+| Barrier call (\(B=120\)) | 1.3288 | 1.3270 | — |
 
-95% confidence intervals (sequential):
+Sequential 95% confidence intervals:
 
-| Option | Lower | Upper | SE |
+| Contract | Lower | Upper | SE |
 |---|---|---|---|
-| European | 10.4294 | 10.4703 | 0.0104 |
-| Asian | 5.7383 | 5.7695 | 0.0080 |
-| Barrier | 1.3221 | 1.3355 | 0.0034 |
+| European call | 10.4294 | 10.4703 | 0.0104 |
+| Asian call | 5.7383 | 5.7695 | 0.0080 |
+| Barrier call | 1.3221 | 1.3355 | 0.0034 |
 
-### Timing and speedup
+Timing:
 
-| Option | Sequential | Parallel (4 cores) | Speedup |
+| Contract | Sequential time | Parallel time (4 workers) | Speedup |
 |---|---|---|---|
-| European | 46.5 ms | 13.3 ms | 1.50× |
-| Asian | 7355 ms | 1919 ms | 3.83× |
-| Barrier | 7562 ms | 1967 ms | 3.90× |
+| European call | 42.4 ms | 12.2 ms | 3.48× |
+| Asian call | 7318.5 ms | 1906.1 ms | 3.84× |
+| Barrier call | 7604.5 ms | 1938.9 ms | 3.92× |
 
-European speedup is lower because the closed-form pricer is memory-bandwidth bound
-rather than compute bound — the per-path work is too small to fully amortize thread
-launch overhead. Asian and Barrier pricers simulate 252-step paths per simulation,
-making them compute-bound and thus near-linearly scalable with core count.
+The pricing benchmark compares the Monte Carlo estimate
+\[
+\hat V_N = e^{-rT}\frac{1}{N}\sum_{i=1}^N X_i
+\]
+against a closed-form Black-Scholes price, and it also reports the empirical standard error
+\[
+\widehat{\mathrm{SE}} = \frac{s_N}{\sqrt{N}}, \qquad
+s_N^2 = \frac{1}{N-1}\sum_{i=1}^N (X_i-\bar X)^2.
+\]
+For the European call, the Monte Carlo price should sit near the Black-Scholes value because both are pricing the same contract under the same risk-neutral GBM model. The small difference is probably sampling noise along with the usual Monte Carlo error.
+
+### 2) Scalability benchmark
+
+| Workers | Asian time (ms) | Speedup | Barrier time (ms) | Speedup |
+|---|---|---|---|---|
+| 1  | 7212.8 | 1.00× | 7402.3 | 1.00× |
+| 2  | 3665.1 | 1.97× | 3812.2 | 1.94× |
+| 4  | 1889.1 | 3.82× | 1956.8 | 3.78× |
+| 8  | 1399.3 | 5.15× | 1423.3 | 5.20× |
+| 16 | 1056.7 | 6.83× | 1031.4 | 7.18× |
+
+The scalability benchmark measures how well the workload parallelizes. The ideal speedup with \(p\) workers is
+\[
+S(p) = \frac{T(1)}{T(p)} \approx p,
+\]
+but in practice it is limited by serial overhead, worker startup, synchronization, and memory effects. A standard upper bound is Amdahl’s law:
+\[
+S(p) = \frac{1}{f + \frac{1-f}{p}},
+\]
+where \(f\) is the serial fraction of the code. As \(p\) grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
+
+Asian and Barrier options scale much better than a tiny closed-form calculation because they do substantial per-simulation work: each path contains 252 GBM steps, repeated over a large number of simulations. That makes the workload compute-bound, so adding workers is effective until overhead starts to dominate. The observed speedups are therefore close to linear at low worker counts and then flatten gradually at higher counts.
+
+### 3) Convergence benchmark
+
+| N | Price | SE | \(|MC - BS|\) | SE ratio |
+|---|---|---|---|---|
+| 1,000 | 10.6350 | 0.3405 | 0.3381 | — |
+| 5,000 | 10.6020 | 0.1498 | 0.3051 | 2.27× |
+| 10,000 | 10.5167 | 0.1041 | 0.2198 | 1.44× |
+| 50,000 | 10.4829 | 0.0464 | 0.1860 | 2.24× |
+| 100,000 | 10.4520 | 0.0328 | 0.1551 | 1.41× |
+| 500,000 | 10.4590 | 0.0148 | 0.1621 | 2.22× |
+| 1,000,000 | 10.4499 | 0.0104 | 0.1529 | 1.42× |
+
+The convergence benchmark checks the core Monte Carlo law:
+\[
+\operatorname{Var}(\hat V_N) = \frac{\operatorname{Var}(X)}{N},
+\qquad
+\operatorname{SE}(\hat V_N) \propto \frac{1}{\sqrt{N}}.
+\]
+So when the sample size \(N\) grows by a factor of \(c\), the standard error should shrink by about \(\sqrt{c}\). Evidently by the behavior seen here: going from 1,000 to 1,000,000 paths reduces the standard error from about 0.3405 to 0.0104, which is roughly a factor of 33 reduction, very close to the theoretical \(\sqrt{1000} \approx 31.6\).
+
+The \(|MC - BS|\) column should also contract with larger \(N\), but not monotonically every time because each estimate is still random. The important point is that the error band tightens as \(N^{-1/2}\), so the estimate becomes more stable and the confidence interval narrows.
 
 ---
 
 ## Interpreting the results
 
-**Asian < European** — The Asian payoff depends on the path average rather than the
-terminal price. Averaging over 252 daily prices reduces effective volatility, compressing
-the right tail of the payoff distribution and therefore the option premium.
+**European vs Black-Scholes** — The European call is the only contract here with a closed-form Black-Scholes benchmark. Under the same GBM dynamics used by the simulator, the Monte Carlo estimator is unbiased:
+\[
+\mathbb{E}[\hat V_N] = V.
+\]
+So the simulated price should fluctuate around the analytical price, with typical deviation on the order of one standard error. That is exactly what the benchmark shows.
 
-**Barrier << European** — The knock-out condition at $B = 120$ eliminates precisely
-the paths that would produce large payoffs (those that rise well above $K = 100$
-are also likely to have breached $B = 120$ en route). The surviving paths are those
-that stayed subdued, yielding a much lower expected payoff.
+**Asian < European** — The Asian payoff depends on the arithmetic average
+\[
+\bar S = \frac{1}{n}\sum_{j=1}^{n} S_{t_j}
+\]
+instead of only the terminal price \(S_T\). Averaging reduces path-to-path variability, so the right tail is less explosive than in a plain European call. Since the call payoff is convex but the averaging smooths the underlying path, the expected payoff is lower than the European call for the same \(S_0, K, r, \sigma, T\).
 
-**Black-Scholes comparison** — The analytical Black-Scholes formula applies only to
-European calls under constant volatility. The MC estimate of 10.4499 lies within
-the expected Monte Carlo error band for $N = 10^6$ simulations. No closed-form
-reference exists for Asian or Barrier options — Monte Carlo simulation is the
-standard pricing method for these contracts.
+**Barrier << European** — The knock-out barrier removes paths that ever cross \(B = 120\):
+\[
+X = e^{-rT}(S_T-K)^+\mathbf{1}\left[\max_{0\le t\le T} S_t < B\right].
+\]
+This indicator kills many of the paths that would otherwise contribute large payoffs. In other words, the barrier truncates the high-payoff tail, so the price collapses relative to the European contract.
+
+**Why the runtime trends look like they do** — European pricing is cheap because it only needs the terminal GBM draw, so parallelization helps less. Asian and Barrier pricing are expensive because each path requires repeated time stepping:
+\[
+S_{t_{j+1}} = S_{t_j}\exp\left((r-\tfrac12\sigma^2)\Delta t + \sigma\sqrt{\Delta t}\,Z_j\right),
+\]
+which makes the CPU do much more work per simulation. That extra arithmetic is what allows parallel workers to pay off. In short: more per-path work means better scaling.
