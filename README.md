@@ -46,14 +46,13 @@ achieves a 3–5× reduction in variance for at-the-money calls.
 ## Architecture
 
 ```
-cpp/
-  include/
-    gbm.hpp                — MarketParams, SimulationConfig, generate_path()
-    pricers.hpp            — Sequential pricers, Black-Scholes reference
-    parallel_pricers.hpp   — std::async worker pool, pooled variance SE
-  src/
-    main.cpp               — Validation, timing, speedup table
-  CMakeLists.txt
+include/
+  gbm.hpp                — MarketParams, SimulationConfig, generate_path()
+  pricers.hpp            — Sequential pricers, Black-Scholes reference
+  parallel_pricers.hpp   — std::async worker pool, pooled variance SE
+src/
+  main.cpp               — Validation, timing, speedup table
+CMakeLists.txt
 ```
 
 **Key design decisions:**
