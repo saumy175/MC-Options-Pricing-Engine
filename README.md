@@ -206,9 +206,9 @@ Asian and Barrier options scale much better than a tiny closed-form calculation 
 The convergence benchmark checks the core Monte Carlo law:
 
 $$
-\operatorname{Var}(\hat V_N) = \frac{\operatorname{Var}(X)}{N},
+\mathrm{Var}(\hat V_N) = \frac{\mathrm{Var}(X)}{N},
 \qquad
-\operatorname{SE}(\hat V_N) \propto \frac{1}{\sqrt{N}}.
+\mathrm{SE}(\hat V_N) \propto \frac{1}{\sqrt{N}}.
 $$
 
 So when the sample size $N$ grows by a factor of $c$, the standard error should shrink by about $\sqrt{c}$, which is evidently seen here: going from 1,000 to 1,000,000 paths reduces the standard error from about 0.3405 to 0.0104, which is roughly a factor of 33 reduction close to the theoretical $\sqrt{1000} \approx 31.6$.
