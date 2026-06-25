@@ -11,9 +11,7 @@ call options with antithetic variance reduction and `std::async`-based paralleli
 Asset price paths are simulated under the risk-neutral measure using the discrete
 GBM scheme derived from the Black-Scholes SDE:
 
-$$S_{t+\Delta t}=S_t\exp((r-\frac{1}{2}\sigma^2)\Delta t+\sigma\sqrt{\Delta t}Z)$$
-
-$$Z\sim N(0,1)$$
+$$S_{t+\Delta t}=S_t\exp((r-\frac{1}{2}\sigma^2)\Delta t+\sigma\sqrt{\Delta t}Z),  Z\sim N(0,1)$$
 where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n_{\text{steps}}$.
 
 The option price is estimated as the discounted expected payoff:
@@ -106,11 +104,11 @@ To change the default values, edit `include/cli.hpp` and change them at `src/mai
 
 ## Benchmark results
 
-**Hardware:** Intel(R) Core(TM) Ultra 5 225H, 14-core CPU, 16 GB RAM, Arch Linux
+**Hardware:** `Intel(R) Core(TM) Ultra 5 225H`, `14-core CPU`, `16 GB RAM`, `Arch Linux`
 
 **Benchmark parameters used in the output below:**  
 $S_0 = 100$, $K = 100$, $r = 0.05$, $\sigma = 0.20$, $T = 1.0$,  
-$B = 120$, $N = 10^6$, $n_{\text{steps}} = 252$, 4 workers, antithetic variates enabled.
+$B = 120$, $N = 10^6$, $n_{\text{steps}} = 252$, $n_{\text{workers}} = 4, antithetic variates enabled.
 
 ### What the benchmarks measure
 
@@ -240,7 +238,7 @@ This indicator kills many of the paths that would otherwise contribute large pay
 **Runtime Trends** — European pricing is cheap because it only needs the terminal GBM draw, so parallelization helps less. Asian and Barrier pricing are expensive because each path requires repeated time stepping:
 
 $$
-S_{t_{j+1}} = S_{t_j}\exp\left((r-\tfrac12\sigma^2)\Delta t + \sigma\sqrt{\Delta t}\,Z_j\right),
+S_{t_{j+1}} = S_{t_j}\exp\left((r-\tfrac12\sigma^2)\Delta t + \sigma\sqrt{\Delta t}\Z_j\right),
 $$
 
 which makes the CPU do much more work per simulation. That extra arithmetic is what allows parallel workers to pay off. In short: more per-path work means better scaling.
