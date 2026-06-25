@@ -1,3 +1,0 @@
-/home/saumy/Desktop/P/options_pricing_engine/cpp/build/CMakeFiles/mc_engine.dir
-/home/saumy/Desktop/P/options_pricing_engine/cpp/build/CMakeFiles/edit_cache.dir
-/home/saumy/Desktop/P/options_pricing_engine/cpp/build/CMakeFiles/rebuild_cache.dir

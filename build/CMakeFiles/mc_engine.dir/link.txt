@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -march=native -Wl,--dependency-file=CMakeFiles/mc_engine.dir/link.d CMakeFiles/mc_engine.dir/src/main.cpp.o -o mc_engine
