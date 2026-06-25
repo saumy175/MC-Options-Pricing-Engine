@@ -11,15 +11,9 @@ call options with antithetic variance reduction and `std::async`-based paralleli
 Asset price paths are simulated under the risk-neutral measure using the discrete
 GBM scheme derived from the Black-Scholes SDE:
 
-$$
-S_{t+\Delta t}
-= S_t \cdot \exp\left[
-\left(r - \tfrac{1}{2}\sigma^2\right)\Delta t
-+ \sigma\sqrt{\Delta t}\, Z
-\right],
-\qquad Z \sim \mathcal{N}(0,1)
-$$
+$$S_{t+\Delta t}=S_t\exp((r-\frac{1}{2}\sigma^2)\Delta t+\sigma\sqrt{\Delta t}Z)$$
 
+$$Z\sim N(0,1)$$
 where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n_{\text{steps}}$.
 
 The option price is estimated as the discounted expected payoff:
@@ -108,7 +102,7 @@ Examples:
   ./mc_engine --mode scalability --sims 2000000
 ```
 
-To change the default values, edit 'include/cli.hpp' and change them at 'src/main.cpp' as well.
+To change the default values, edit `include/cli.hpp` and change them at `src/main.cpp` as well.
 
 ## Benchmark results
 
