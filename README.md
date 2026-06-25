@@ -11,13 +11,23 @@ call options with antithetic variance reduction and `std::async`-based paralleli
 Asset price paths are simulated under the risk-neutral measure using the discrete
 GBM scheme derived from the Black-Scholes SDE:
 
-$$S_{t + \Delta t} = S_t \cdot \exp\left[\left(r - \tfrac{1}{2}\sigma^2\right)\Delta t + \sigma\sqrt{\Delta t}\, Z\right], \quad Z \sim \mathcal{N}(0,1)$$
+$$
+S_{t+\Delta t}
+= S_t \cdot \exp\left[
+\left(r - \tfrac{1}{2}\sigma^2\right)\Delta t
++ \sigma\sqrt{\Delta t}\, Z
+\right],
+\qquad Z \sim \mathcal{N}(0,1)
+$$
 
-where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n\_\text{steps}$.
+where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n_{\text{steps}}$.
 
 The option price is estimated as the discounted expected payoff:
 
-$$\hat{V} = e^{-rT} \cdot \frac{1}{N} \sum_{i=1}^{N} \phi\left(S^{(i)}\right)$$
+$$
+\hat{V}
+= e^{-rT} \cdot \frac{1}{N} \sum_{i=1}^{N} \phi\left(S^{(i)}\right)
+$$
 
 with standard error $\hat{\sigma} / \sqrt{N}$ where $\hat{\sigma}$ is the sample
 standard deviation of the payoffs.
@@ -35,7 +45,10 @@ standard deviation of the payoffs.
 For each standard normal draw $Z$, a mirror path is simulated using $-Z$.
 The two payoffs are averaged before accumulation:
 
-$$\hat{\phi}_i = \tfrac{1}{2}\left[\phi(Z_i) + \phi(-Z_i)\right]$$
+$$
+\hat{\phi}_i
+= \tfrac{1}{2}\left[\phi(Z_i) + \phi(-Z_i)\right]
+$$
 
 Since $\text{Cov}(\phi(Z), \phi(-Z)) < 0$, this reduces the estimator variance
 without increasing the number of GBM draws. Empirically, the European pricer
@@ -47,16 +60,15 @@ achieves a 3–5× reduction in variance for at-the-money calls.
 
 ```text
 benchmarks/
-  pricing.hpp       — pricing benchmark: sequential vs parallel prices, CI, timing
-  scalability.hpp   — worker-scaling benchmark: speedup vs number of workers
-  convergence.hpp   — Monte Carlo convergence benchmark: error vs number of paths
+  pricing.hpp            — pricing benchmark: sequential vs parallel prices, CI, timing
+  scalability.hpp        — worker-scaling benchmark: speedup vs number of workers
+  convergence.hpp        — Monte Carlo convergence benchmark: error vs number of paths
 
 include/
-  cli.hpp           — command-line parsing and default parameter block
-  greeks.hpp        — finite-difference Greeks
-  gbm.hpp           — GBM path generation under the risk-neutral measure
-  parallel_pricers.hpp
-                    — parallel Monte Carlo pricers and worker aggregation
+  cli.hpp                — command-line parsing and default parameter block
+  greeks.hpp             — finite-difference Greeks
+  gbm.hpp                — GBM path generation under the risk-neutral measure
+  parallel_pricers.hpp   — parallel Monte Carlo pricers and worker aggregation
   pricers.hpp       — sequential pricers and analytical Black-Scholes reference
 ```
 
@@ -96,15 +108,15 @@ Examples:
   ./mc_engine --mode scalability --sims 2000000
 ```
 
-To change the default values, edit `include/cli.hpp` and change them at 'src/main.cpp' as well.
+To change the default values, edit 'include/cli.hpp' and change them at 'src/main.cpp' as well.
 
 ## Benchmark results
 
 **Hardware:** Intel(R) Core(TM) Ultra 5 225H, 14-core CPU, 16 GB RAM, Arch Linux
 
 **Benchmark parameters used in the output below:**  
-\(S_0 = 100\), \(K = 100\), \(r = 0.05\), \(\sigma = 0.20\), \(T = 1.0\),  
-\(B = 120\), \(N = 10^6\), \(n_{steps} = 252\), 4 workers, antithetic variates enabled.
+$S_0 = 100$, $K = 100$, $r = 0.05$, $\sigma = 0.20$, $T = 1.0$,  
+$B = 120$, $N = 10^6$, $n_{\text{steps}} = 252$, 4 workers, antithetic variates enabled.
 
 ### What the benchmarks measure
 
@@ -112,7 +124,7 @@ To change the default values, edit `include/cli.hpp` and change them at 'src/mai
 |---|---|---|
 | Pricing | Final option value, confidence interval, and runtime | Accuracy of the Monte Carlo estimator and end-to-end performance |
 | Scalability (for Asian and Barrier Calls) | Runtime as workers increase | Parallel speedup and overhead amortization |
-| Convergence | Error decay as sample size grows | \(N^{-1/2}\) convergence law |
+| Convergence | Error decay as sample size grows | $N^{-1/2}$ convergence law |
 
 ### 1) Pricing benchmark
 
@@ -120,7 +132,7 @@ To change the default values, edit `include/cli.hpp` and change them at 'src/mai
 |---|---|---|---|
 | European call | 10.4499 | 10.4578 | 10.2969 |
 | Asian call | 5.7539 | 5.7641 | — |
-| Barrier call (\(B=120\)) | 1.3288 | 1.3270 | — |
+| Barrier call ($B=120$) | 1.3288 | 1.3270 | — |
 
 Sequential 95% confidence intervals:
 
@@ -139,14 +151,18 @@ Timing:
 | Barrier call | 7604.5 ms | 1938.9 ms | 3.92× |
 
 The pricing benchmark compares the Monte Carlo estimate
-\[
+
+$$
 \hat V_N = e^{-rT}\frac{1}{N}\sum_{i=1}^N X_i
-\]
+$$
+
 against a closed-form Black-Scholes price, and it also reports the empirical standard error
-\[
+
+$$
 \widehat{\mathrm{SE}} = \frac{s_N}{\sqrt{N}}, \qquad
 s_N^2 = \frac{1}{N-1}\sum_{i=1}^N (X_i-\bar X)^2.
-\]
+$$
+
 For the European call, the Monte Carlo price should sit near the Black-Scholes value because both are pricing the same contract under the same risk-neutral GBM model. The small difference is probably sampling noise along with the usual Monte Carlo error.
 
 ### 2) Scalability benchmark
@@ -159,15 +175,19 @@ For the European call, the Monte Carlo price should sit near the Black-Scholes v
 | 8  | 1399.3 | 5.15× | 1423.3 | 5.20× |
 | 16 | 1056.7 | 6.83× | 1031.4 | 7.18× |
 
-The scalability benchmark measures how well the workload parallelizes. The ideal speedup with \(p\) workers is
-\[
+The scalability benchmark measures how well the workload parallelizes. The ideal speedup with $p$ workers is
+
+$$
 S(p) = \frac{T(1)}{T(p)} \approx p,
-\]
+$$
+
 but in practice it is limited by serial overhead, worker startup, synchronization, and memory effects. A standard upper bound is Amdahl’s law:
-\[
+
+$$
 S(p) = \frac{1}{f + \frac{1-f}{p}},
-\]
-where \(f\) is the serial fraction of the code. As \(p\) grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
+$$
+
+where $f$ is the serial fraction of the code. As $p$ grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
 
 Asian and Barrier options scale much better than a tiny closed-form calculation because they do substantial per-simulation work: each path contains 252 GBM steps, repeated over a large number of simulations. That makes the workload compute-bound, so adding workers is effective until overhead starts to dominate. The observed speedups are therefore close to linear at low worker counts and then flatten gradually at higher counts.
 
@@ -184,39 +204,49 @@ Asian and Barrier options scale much better than a tiny closed-form calculation 
 | 1,000,000 | 10.4499 | 0.0104 | 0.1529 | 1.42× |
 
 The convergence benchmark checks the core Monte Carlo law:
-\[
+
+$$
 \operatorname{Var}(\hat V_N) = \frac{\operatorname{Var}(X)}{N},
 \qquad
 \operatorname{SE}(\hat V_N) \propto \frac{1}{\sqrt{N}}.
-\]
-So when the sample size \(N\) grows by a factor of \(c\), the standard error should shrink by about \(\sqrt{c}\). Evidently by the behavior seen here: going from 1,000 to 1,000,000 paths reduces the standard error from about 0.3405 to 0.0104, which is roughly a factor of 33 reduction, very close to the theoretical \(\sqrt{1000} \approx 31.6\).
+$$
 
-The \(|MC - BS|\) column should also contract with larger \(N\), but not monotonically every time because each estimate is still random. The important point is that the error band tightens as \(N^{-1/2}\), so the estimate becomes more stable and the confidence interval narrows.
+So when the sample size $N$ grows by a factor of $c$, the standard error should shrink by about $\sqrt{c}$, which is evidently seen here: going from 1,000 to 1,000,000 paths reduces the standard error from about 0.3405 to 0.0104, which is roughly a factor of 33 reduction close to the theoretical $\sqrt{1000} \approx 31.6$.
+
+The $|MC - BS|$ column should also contract with larger $N$, but not monotonically every time because each estimate is still random. The important point is that the error band tightens as $N^{-1/2}$, so the estimate becomes more stable and the confidence interval narrows.
 
 ---
 
 ## Interpreting the results
 
 **European vs Black-Scholes** — The European call is the only contract here with a closed-form Black-Scholes benchmark. Under the same GBM dynamics used by the simulator, the Monte Carlo estimator is unbiased:
-\[
+
+$$
 \mathbb{E}[\hat V_N] = V.
-\]
-So the simulated price should fluctuate around the analytical price, with typical deviation on the order of one standard error. That is exactly what the benchmark shows.
+$$
+
+So the simulated price should fluctuate around the analytical price, with typical deviation on the order of one standard error.
 
 **Asian < European** — The Asian payoff depends on the arithmetic average
-\[
-\bar S = \frac{1}{n}\sum_{j=1}^{n} S_{t_j}
-\]
-instead of only the terminal price \(S_T\). Averaging reduces path-to-path variability, so the right tail is less explosive than in a plain European call. Since the call payoff is convex but the averaging smooths the underlying path, the expected payoff is lower than the European call for the same \(S_0, K, r, \sigma, T\).
 
-**Barrier << European** — The knock-out barrier removes paths that ever cross \(B = 120\):
-\[
+$$
+\bar S = \frac{1}{n}\sum_{j=1}^{n} S_{t_j}
+$$
+
+instead of only the terminal price $S_T$. Averaging reduces path-to-path variability, so the right tail is less explosive than in a plain European call. Since the call payoff is convex but the averaging smooths the underlying path, the expected payoff is lower than the European call for the same $S_0, K, r, \sigma, T$.
+
+**Barrier << European** — The knock-out barrier removes paths that ever cross $B$:
+
+$$
 X = e^{-rT}(S_T-K)^+\mathbf{1}\left[\max_{0\le t\le T} S_t < B\right].
-\]
+$$
+
 This indicator kills many of the paths that would otherwise contribute large payoffs. In other words, the barrier truncates the high-payoff tail, so the price collapses relative to the European contract.
 
-**Why the runtime trends look like they do** — European pricing is cheap because it only needs the terminal GBM draw, so parallelization helps less. Asian and Barrier pricing are expensive because each path requires repeated time stepping:
-\[
+**Runtime Trends** — European pricing is cheap because it only needs the terminal GBM draw, so parallelization helps less. Asian and Barrier pricing are expensive because each path requires repeated time stepping:
+
+$$
 S_{t_{j+1}} = S_{t_j}\exp\left((r-\tfrac12\sigma^2)\Delta t + \sigma\sqrt{\Delta t}\,Z_j\right),
-\]
+$$
+
 which makes the CPU do much more work per simulation. That extra arithmetic is what allows parallel workers to pay off. In short: more per-path work means better scaling.
