@@ -1,4 +1,4 @@
-# Monte Carlo Options Pricing Engine — C++ Implementation
+<img width="1334" height="809" alt="image" src="https://github.com/user-attachments/assets/d1160717-28a8-4774-8ad3-8a60a7aec85e" /># Monte Carlo Options Pricing Engine — C++ Implementation
 
 A multi-threaded Monte Carlo engine for pricing exotic options via simulation of
 Geometric Brownian Motion (GBM). Implements European, Asian, and Barrier (knock-out)
@@ -182,9 +182,7 @@ $$
 
 where $f$ is the serial fraction of the code. As $p$ grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
 
-<p align="center">
-  <img src="amdahl_speedup.png" alt="Amdahl's Law Speedup" width="700">
-</p>
+<img width="1436" height="870" alt="image" src="https://github.com/user-attachments/assets/8f30634b-734a-4d0c-a27b-dee65aa47829" />
 
 Serial fraction f estimated via least-squares regression on worker counts 1–16 (beyond that the threads compete for the same cores and OS scheduling noise dominates.)
 
