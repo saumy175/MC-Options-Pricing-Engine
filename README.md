@@ -182,7 +182,9 @@ $$
 
 where $f$ is the serial fraction of the code. As $p$ grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
 
-![Amdahl's Law Speedup](amdahl_speedup.png)
+<p align="center">
+  <img src="amdahl_speedup.png" alt="Amdahl's Law Speedup" width="700">
+</p>
 
 Serial fraction f estimated via least-squares regression on worker counts 1–16 (beyond that the threads compete for the same cores and OS scheduling noise dominates.)
 
