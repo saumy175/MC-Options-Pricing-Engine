@@ -12,6 +12,7 @@ Asset price paths are simulated under the risk-neutral measure using the discret
 GBM scheme derived from the Black-Scholes SDE:
 
 $$S_{t+\Delta t}=S_t\exp((r-\frac{1}{2}\sigma^2)\Delta t+\sigma\sqrt{\Delta t}Z), \qquad Z\sim N(0,1)$$
+
 where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n_{\text{steps}}$.
 
 The option price is estimated as the discounted expected payoff:
@@ -292,11 +293,7 @@ $$
 $$
 
 $$
-\Theta_{BS}
-=
--\frac{S_0\phi(d_1)\sigma}{2\sqrt{T}\,365}
--
-\frac{rKe^{-rT}\Phi(d_2)}{365}
+\Theta_{BS}=-\frac{S_0\phi(d_1)\sigma}{2\sqrt{T}\,365}-\frac{rKe^{-rT}\Phi(d_2)}{365}
 $$
 
 
