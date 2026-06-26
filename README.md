@@ -293,7 +293,7 @@ $$
 $$
 
 $$
-\Theta_{BS}=-\frac{S_0\phi(d_1)\sigma}{2\sqrt{T}\,365}-\frac{rKe^{-rT}\Phi(d_2)}{365}
+\Theta_{BS}=\frac{-S_0\phi(d_1)\sigma - rKe^{-rT}\Phi(d_2)}{365}
 $$
 
 
