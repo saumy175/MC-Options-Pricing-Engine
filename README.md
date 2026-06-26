@@ -228,72 +228,87 @@ The benchmark shown by
 
 uses the finite-difference bumps:
 
-* (dS = 0.01,S_0)
-* (d\sigma = 0.001)
-* (dT = 1/n_{\text{steps}})
+- $dS = 0.01\,S_0$
+- $d\sigma = 0.001$
+- $dT = \dfrac{1}{n_{\text{steps}}}$
 
 To change these small perturbation values, edit `include/greeks.hpp`.
 
-**Finite-difference Greeks
+### Finite-difference Greeks
 
-Let (V(S_0, \sigma, T)) denote the European call price returned by the Monte Carlo pricer.
+Let $V(S_0,\sigma,T)$ denote the European call price returned by the Monte Carlo pricer.
 
-[
-\Delta_{\mathrm{MC}} \approx \frac{V(S_0+dS)-V(S_0-dS)}{2dS}
-]
+$$
+\Delta_{\mathrm{MC}}
+\approx
+\frac{V(S_0+dS)-V(S_0-dS)}{2dS}
+$$
 
-[
-\Gamma_{\mathrm{MC}} \approx \frac{V(S_0+dS)-2V(S_0)+V(S_0-dS)}{dS^2}
-]
+$$
+\Gamma_{\mathrm{MC}}
+\approx
+\frac{V(S_0+dS)-2V(S_0)+V(S_0-dS)}{dS^2}
+$$
 
-[
-\mathrm{Vega}_{\mathrm{MC}} \approx 0.01 \cdot
-\frac{V(\sigma+d\sigma)-V(\sigma-d\sigma)}{2d\sigma}
-]
+$$
+\mathrm{Vega}_{\mathrm{MC}}
+\approx
+0.01\,
+\frac{V(\sigma+d\sigma)-V(\sigma-d\sigma)}
+{2d\sigma}
+$$
 
-[
-\Theta_{\mathrm{MC}} \approx \frac{V(T-dT)-V(T+dT)}{2*dT}
-]
+$$
+\Theta_{\mathrm{MC}}
+\approx
+\frac{V(T-dT)-V(T+dT)}
+{2dT}
+$$
 
-In this implementation, Vega is reported per 1% change in volatility.
-Theta is reported using a one-step maturity bump, so it behaves like a daily time-decay estimate.
+In this implementation, Vega is reported per 1% change in volatility. Theta is estimated using a symmetric finite difference with respect to time to maturity.
 
-**Black-Scholes Greeks
+### Black-Scholes Greeks
 
-For a European call under Black-Scholes,
+For a European call under the Black-Scholes model,
 
-[
-d_1 =
-\frac{\ln(S_0/K) + \left(r+\frac{1}{2}\sigma^2\right)T}
+$$
+d_1
+=
+\frac{\ln(S_0/K)+\left(r+\frac12\sigma^2\right)T}
 {\sigma\sqrt{T}},
 \qquad
-d_2 = d_1 - \sigma\sqrt{T}
-]
+d_2=d_1-\sigma\sqrt{T}
+$$
 
-where (\Phi(\cdot)) is the standard normal CDF and (\phi(\cdot)) is the standard normal PDF.
+where $\Phi(\cdot)$ is the standard normal CDF and $\phi(\cdot)$ is the standard normal PDF.
 
-[
-\Delta_{\mathrm{BS}} = \Phi(d_1)
-]
+$$
+\Delta_{\mathrm{BS}}
+=
+\Phi(d_1)
+$$
 
-[
-\Gamma_{\mathrm{BS}} =
-\frac{\phi(d_1)}{S_0 \sigma \sqrt{T}}
-]
+$$
+\Gamma_{\mathrm{BS}}
+=
+\frac{\phi(d_1)}
+{S_0\sigma\sqrt{T}}
+$$
 
-[
-\mathrm{Vega}_{\mathrm{BS}} =
-S_0 \phi(d_1)\sqrt{T}\cdot 0.01
-]
+$$
+\mathrm{Vega}_{\mathrm{BS}}
+=
+S_0\phi(d_1)\sqrt{T}\times0.01
+$$
 
-[
-\Theta_{\mathrm{BS}} =
+$$
+\Theta_{\mathrm{BS}}
+=
 \frac{
--\frac{S_0 \phi(d_1)\sigma}{2\sqrt{T}}
-
-* rK e^{-rT}\Phi(d_2)
-  }{365}
-  ]
+-\dfrac{S_0\phi(d_1)\sigma}{2\sqrt{T}}
+-rKe^{-rT}\Phi(d_2)
+}{365}
+$$
 
 
 ## Interpreting the results
