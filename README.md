@@ -1,4 +1,4 @@
-<img width="1334" height="809" alt="image" src="https://github.com/user-attachments/assets/d1160717-28a8-4774-8ad3-8a60a7aec85e" /># Monte Carlo Options Pricing Engine — C++ Implementation
+# Monte Carlo Options Pricing Engine — C++ Implementation
 
 A multi-threaded Monte Carlo engine for pricing exotic options via simulation of
 Geometric Brownian Motion (GBM). Implements European, Asian, and Barrier (knock-out)
