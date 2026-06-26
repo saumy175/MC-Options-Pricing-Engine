@@ -23,7 +23,7 @@ inline void run_scalability(const CLIArgs& args) {
     auto as_opt = to_as(args);
     auto ba_opt = to_ba(args);
 
-    std::vector<int> worker_counts = {1, 2, 4, 8, 16, 32};
+    std::vector<int> worker_counts = {1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24};
 
     std::cout  << "Scalability Benchmark (N=" << args.n_sims  << ", steps=" << args.n_steps << ")\n\n";
 

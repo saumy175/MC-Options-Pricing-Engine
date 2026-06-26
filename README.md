@@ -182,6 +182,10 @@ $$
 
 where $f$ is the serial fraction of the code. As $p$ grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
 
+![Amdahl's Law Speedup](amdahl_speedup.png)
+
+Serial fraction f estimated via least-squares regression on worker counts 1–16 (beyond that the threads compete for the same cores and OS scheduling noise dominates.)
+
 Asian and Barrier options scale much better than a tiny closed-form calculation because they do substantial per-simulation work: each path contains 252 GBM steps, repeated over a large number of simulations. That makes the workload compute-bound, so adding workers is effective until overhead starts to dominate. The observed speedups are therefore close to linear at low worker counts and then flatten gradually at higher counts.
 
 ### 3) Convergence benchmark
@@ -235,7 +239,7 @@ uses the finite-difference bumps:
 
 To change these small perturbation values, edit `include/greeks.hpp`.
 
-### Finite-difference Greeks
+**Finite-Difference Greeks**
 
 Let $V(S_0,\sigma,T)$ denote the European call price returned by the Monte Carlo pricer.
 
@@ -268,7 +272,7 @@ $$
 
 In this implementation, Vega is reported per 1% change in volatility. Theta is estimated using a symmetric finite difference with respect to time to maturity.
 
-### Black-Scholes Greeks
+**Black-Scholes Greeks**
 
 For a European call under the Black-Scholes model,
 
