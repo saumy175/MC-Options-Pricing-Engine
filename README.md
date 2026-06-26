@@ -11,7 +11,7 @@ call options with antithetic variance reduction and `std::async`-based paralleli
 Asset price paths are simulated under the risk-neutral measure using the discrete
 GBM scheme derived from the Black-Scholes SDE:
 
-$$S_{t+\Delta t}=S_t\exp((r-\frac{1}{2}\sigma^2)\Delta t+\sigma\sqrt{\Delta t}Z),  Z\sim N(0,1)$$
+$$S_{t+\Delta t}=S_t\exp((r-\frac{1}{2}\sigma^2)\Delta t+\sigma\sqrt{\Delta t}Z), \qquad Z\sim N(0,1)$$
 where $r$ is the risk-free rate, $\sigma$ is volatility, and $\Delta t = T / n_{\text{steps}}$.
 
 The option price is estimated as the discounted expected payoff:
@@ -272,42 +272,31 @@ In this implementation, Vega is reported per 1% change in volatility. Theta is e
 For a European call under the Black-Scholes model,
 
 $$
-d_1
-=
-\frac{\ln(S_0/K)+\left(r+\frac12\sigma^2\right)T}
-{\sigma\sqrt{T}},
+d_1=\frac{\ln(S_0/K)+(r+\frac12\sigma^2)T}{\sigma\sqrt{T}},
 \qquad
 d_2=d_1-\sigma\sqrt{T}
 $$
 
-where $\Phi(\cdot)$ is the standard normal CDF and $\phi(\cdot)$ is the standard normal PDF.
+where $\Phi$ is the standard normal CDF and $\phi$ is the standard normal PDF.
 
 $$
-\Delta_{\mathrm{BS}}
-=
-\Phi(d_1)
-$$
-
-$$
-\Gamma_{\mathrm{BS}}
-=
-\frac{\phi(d_1)}
-{S_0\sigma\sqrt{T}}
+\Delta_{BS}=\Phi(d_1)
 $$
 
 $$
-\mathrm{Vega}_{\mathrm{BS}}
-=
-S_0\phi(d_1)\sqrt{T}\times0.01
+\Gamma_{BS}=\frac{\phi(d_1)}{S_0\sigma\sqrt{T}}
 $$
 
 $$
-\Theta_{\mathrm{BS}}
+\mathrm{Vega}_{BS}=S_0\phi(d_1)\sqrt{T}\times0.01
+$$
+
+$$
+\Theta_{BS}
 =
-\frac{
--\dfrac{S_0\phi(d_1)\sigma}{2\sqrt{T}}
--rKe^{-rT}\Phi(d_2)
-}{365}
+-\frac{S_0\phi(d_1)\sigma}{2\sqrt{T}\,365}
+-
+\frac{rKe^{-rT}\Phi(d_2)}{365}
 $$
 
 
