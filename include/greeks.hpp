@@ -38,10 +38,13 @@ Greeks compute_greeks(
 
     double vega = (V_sig_up - V_sig_down) / (2.0 * dsigma) * 0.01; // dsigma -> 0 then vega -> d(price)/dsigma * 0.01 (reported at per 1%)
 
-    EuropeanOptionParams opt_near = {option.K, option.T - dT}; 
-    double V_near = price_european_call(market, opt_near, config).price; // T - dT
+    EuropeanOptionParams opt_up = {option.K, option.T + dT};
+    EuropeanOptionParams opt_down = {option.K, option.T - dT}; 
 
-    double theta = (V_near - V_base)/dT/config.n_steps; // dT -> 0 then theta -> d(price)/dT
+    double V_time_up = price_european_call(market, opt_up, config).price; // T + dT
+    double V_time_down = price_european_call(market, opt_down, config).price; // T - dT
+
+    double theta = -(V_time_up - V_time_down)/(2*dT)/config.n_steps; // dT -> 0 then theta -> d(price)/dT
 
     return {delta, gamma, vega, theta};
 }

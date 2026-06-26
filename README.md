@@ -207,7 +207,94 @@ So when the sample size $N$ grows by a factor of $c$, the standard error should 
 
 The $|MC - BS|$ column should also contract with larger $N$, but not monotonically every time because each estimate is still random. The important point is that the error band tightens as $N^{-1/2}$, so the estimate becomes more stable and the confidence interval narrows.
 
----
+### 4) Greeks benchmark
+Note: $n_{\text{steps}} = 365$ was used here
+
+| Greek | MC (finite diff) | Black-Scholes |    Error |
+| ----- | ---------------: | ------------: | -------: |
+| Delta |         0.637042 |      0.636831 | 0.000211 |
+| Gamma |         0.018958 |      0.018762 | 0.000196 |
+| Vega  |         0.375185 |      0.375240 | 0.000055 |
+| Theta |        -0.017576 |     -0.017573 | 0.000003 |
+
+
+This mode computes the sensitivities of the European call price with respect to the main input parameters and compares the Monte Carlo estimates against the closed-form Black-Scholes Greeks.
+
+The benchmark shown by
+
+```bash
+./mc_engine --mode greeks
+```
+
+uses the finite-difference bumps:
+
+* (dS = 0.01,S_0)
+* (d\sigma = 0.001)
+* (dT = 1/n_{\text{steps}})
+
+To change these small perturbation values, edit `include/greeks.hpp`.
+
+**Finite-difference Greeks
+
+Let (V(S_0, \sigma, T)) denote the European call price returned by the Monte Carlo pricer.
+
+[
+\Delta_{\mathrm{MC}} \approx \frac{V(S_0+dS)-V(S_0-dS)}{2dS}
+]
+
+[
+\Gamma_{\mathrm{MC}} \approx \frac{V(S_0+dS)-2V(S_0)+V(S_0-dS)}{dS^2}
+]
+
+[
+\mathrm{Vega}_{\mathrm{MC}} \approx 0.01 \cdot
+\frac{V(\sigma+d\sigma)-V(\sigma-d\sigma)}{2d\sigma}
+]
+
+[
+\Theta_{\mathrm{MC}} \approx \frac{V(T-dT)-V(T+dT)}{2*dT}
+]
+
+In this implementation, Vega is reported per 1% change in volatility.
+Theta is reported using a one-step maturity bump, so it behaves like a daily time-decay estimate.
+
+**Black-Scholes Greeks
+
+For a European call under Black-Scholes,
+
+[
+d_1 =
+\frac{\ln(S_0/K) + \left(r+\frac{1}{2}\sigma^2\right)T}
+{\sigma\sqrt{T}},
+\qquad
+d_2 = d_1 - \sigma\sqrt{T}
+]
+
+where (\Phi(\cdot)) is the standard normal CDF and (\phi(\cdot)) is the standard normal PDF.
+
+[
+\Delta_{\mathrm{BS}} = \Phi(d_1)
+]
+
+[
+\Gamma_{\mathrm{BS}} =
+\frac{\phi(d_1)}{S_0 \sigma \sqrt{T}}
+]
+
+[
+\mathrm{Vega}_{\mathrm{BS}} =
+S_0 \phi(d_1)\sqrt{T}\cdot 0.01
+]
+
+[
+\Theta_{\mathrm{BS}} =
+\frac{
+-\frac{S_0 \phi(d_1)\sigma}{2\sqrt{T}}
+
+* rK e^{-rT}\Phi(d_2)
+  }{365}
+  ]
+
 
 ## Interpreting the results
 
