@@ -182,7 +182,7 @@ $$
 
 where $f$ is the serial fraction of the code. As $p$ grows, the parallel section dominates less of the total runtime improvement, so speedup bends away from the ideal straight line.
 
-<img width="1436" height="870" alt="image" src="https://github.com/user-attachments/assets/8f30634b-734a-4d0c-a27b-dee65aa47829" />
+<img width="1436" height="870" alt="image" src="https://github.com/user-attachments/assets/a5ef69ca-7185-40eb-891d-6e0c62fa88d8" />
 
 Serial fraction f estimated via least-squares regression on worker counts 1–16 (beyond that the threads compete for the same cores and OS scheduling noise dominates.)
 
